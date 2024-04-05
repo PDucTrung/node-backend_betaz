@@ -10,13 +10,6 @@ let privateKey = fs.readFileSync("./a0bet_net.key", "utf8");
 let certificate = fs.readFileSync("./a0bet_net.crt", "utf8");
 let credentials = { key: privateKey, cert: certificate };
 const rateLimit = require("express-rate-limit");
-const limiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minutes
-  max: 1000, // Limit each IP to 60 requests per `window` (here, per 1 minute)
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-});
-
 let { Keyring, ApiPromise, WsProvider } = require("@polkadot/api");
 const { jsonrpc } = require("@polkadot/types/interfaces/jsonrpc");
 // ETH
@@ -43,7 +36,6 @@ let {
 let {
   setBetazTokenContract,
 } = require("./src/contracts/betaz_token_contract_calls.js");
-
 // VRFV2CONSUMER
 let {
   consumer_contract,
@@ -62,6 +54,13 @@ const {
   pandora_cronjob,
 } = require("./src/crons/betaz_pandora_flow_cronjob.js");
 const { CRONJOB_ENABLE, CRONJOB_TIME } = require("./src/utils/constant.js");
+
+const limiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minutes
+  max: 1000, // Limit each IP to 60 requests per `window` (here, per 1 minute)
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
 
 const app = express();
 
@@ -112,9 +111,18 @@ const connectDb = () => {
 
 const PORT = process.env.PORT || 3000;
 connectDb().then(async () => {
+  // let httpsServer = https.createServer(credentials, app);
   app.listen(PORT, () => {
     console.log(`BET AZ API listening on port ${PORT}!`);
   });
+  // await checkSBData();
+  // await checkAPY();
+  // //await updateSupply();
+  // setInterval(checkNewTrades, 5 * 1000);
+  // setInterval(checkPendingRedemption, 10 * 1000);
+  // setInterval(checkSBData, 5 * 60 * 1000);
+  // setInterval(checkAPY, 1 * 60 * 60 * 1000);
+  // setInterval(updateSupply, 24 * 60 * 60 * 1000);
 });
 
 /****************** Connect smartnet BETAZ ***********************/
